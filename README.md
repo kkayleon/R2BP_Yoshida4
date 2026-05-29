@@ -118,7 +118,6 @@ Mean |ΔL|:                           7.478e-01 km^2/s^2
 ![Energy Error](figures/energyError.png)
 ---
 
-can you rewrite this correctly in that form
 
 ## Recommended Simulation Settings
 
