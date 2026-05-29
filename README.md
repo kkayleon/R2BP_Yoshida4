@@ -60,7 +60,7 @@ perturbed     = True
 Run with:
 
 ```bash
-python r2bp_solver.py
+python R2BP.py
 ```
 
 ---
