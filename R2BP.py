@@ -15,8 +15,8 @@
 # [1] Yoshida, H. (1990). "Construction of higher order symplectic integrators." Physics Letters A, 150(5–7), 262–268.
 # [2] Curtis, H.D. (2021). Orbital Mechanics for Engineering Students. 4th ed. Butterworth-Heinemann
 # [3] Bate, R.R., Mueller, D.D. & White, J.E. (1971). Fundamentals of Astrodynamics. Dover Publications
-# [4] https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg
-# [5] https://ssd.jpl.nasa.gov/astro_par.html
+# [4] NASA Earth Observatory — world topography background image: https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg
+# [5] JPL Solar System Dynamics — planetary parameters: https://ssd.jpl.nasa.gov/astro_par.html
 # 
 # ---------------------------------- Notes ---------------------------------------
 #
