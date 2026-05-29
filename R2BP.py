@@ -6,7 +6,7 @@
 #       > Sympletic integrator preserves Hamiltonian energy close to machine precision
 #       > Overkill for the simplicicty of the R2BP (known analytical solution)
 #
-#   Perturbation model includes only the J2 and third body perturbations
+#   Perturbation model includes only the J2 perturbations
 #       > Conservative perturbations preserve the Hamiltonian energy structure
 #       > Angular momentum L is not conserved under perturbation acceleration model 
 #   Currently only accounts for periodic orbits (0 <= e < 1)
