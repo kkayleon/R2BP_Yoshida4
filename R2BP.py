@@ -16,13 +16,13 @@
 # [2] Curtis, H.D. (2021). Orbital Mechanics for Engineering Students. 4th ed. Butterworth-Heinemann
 # [3] Bate, R.R., Mueller, D.D. & White, J.E. (1971). Fundamentals of Astrodynamics. Dover Publications
 # [4] https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg
-# [5] https://en.wikipedia.org/wiki/Quasi-Zenith_Satellite_System
+# [5] https://ssd.jpl.nasa.gov/astro_par.html
 # 
 # ---------------------------------- Notes ---------------------------------------
 #
 #   Simulation specifications (observed)
 #       > Circular LEO orbits -> stepsPerOrbit ~ 1E3 (|dE| ~ E-12)
-#       > Molniya orbits      -> stepsPerOrbit ~ 1E4 (|dE| ~ E-10)
+#       > Molniya orbits      -> stepsPerOrbit ~ 1E5 (|dE| ~ E-10)
 #       > Tundra orbits       -> stepsPerOrbit ~ 1E4 (|dE| ~ E-12)
 #
 # --------------------------------------------------------------------------------
@@ -118,18 +118,18 @@ def OEtoRV(a, e, i, raan, argp, theta, mu):
     v = mu/h * np.array([-sin(theta), e + cos(theta), 0])
 
     # Rotation matrix from perifocal to inertial frame (ECI)
-    R_PI = np.array([[-sin(argp)*cos(i)*sin(raan)+cos(argp)*cos(raan), cos(argp)*cos(i)*sin(raan)+sin(argp)*cos(raan), sin(i)*sin(raan)], 
-                     [-sin(argp)*cos(i)*cos(raan)-cos(argp)*sin(raan), cos(argp)*cos(i)*cos(raan)-sin(argp)*sin(raan), sin(i)*cos(raan)], 
-                     [ sin(argp)*sin(i),                              -cos(argp)*sin(i),                               cos(i)          ]])
+    R_PI = np.array([[-sin(raan)*cos(i)*sin(argp)+cos(raan)*cos(argp), cos(raan)*cos(i)*sin(argp)+sin(raan)*cos(argp), sin(i)*sin(argp)], 
+                     [-sin(raan)*cos(i)*cos(argp)-cos(raan)*sin(argp), cos(raan)*cos(i)*cos(argp)-sin(raan)*sin(argp), sin(i)*cos(argp)], 
+                     [ sin(raan)*sin(i),                              -cos(raan)*sin(i),                               cos(i)          ]])
     R_IP = np.matrix_transpose(R_PI)
-    
+
     # Tensor transformation law (rank-1)
     return R_IP @ r, R_IP @ v
 
 def UTCtoJ0(date):
     # Date & Time in UTC to Julian day number at 0h UTC
     # Valid for any year between 1900 to 2100
-    return 367*date[2] - int(7/4*(date[2]+int((date[0] + 9)/12))) + int(275*date[0]/9) + 1721013.5
+    return 367*date[2] - int(7/4*(date[2]+int((date[0] + 9)/12))) + int(275*date[0]/9) + date[1] + 1721013.5
 
 def JD(timeUTC, J0):
     # Time (UTC) to Julian day
@@ -162,32 +162,29 @@ def latLongECEF(traj, theta_G):
 
     return lat, long
 
-def lunarPosition(JD):
-    
-    return 1
 
 # ---------------------------------- Inputs --------------------------------------
 
 # Orbtial elements
-zp = 520                      # Periapsis altitude [km]               
-e = 0.0                      # Eccentricity []
-i = np.radians(97.45)         # Inclination [rad] (input in degrees)
-raan = np.radians(0.0)        # Right ascension of ascending node [rad] (input in degrees)
-argp = np.radians(0.0)        # Argument of periapsis [rad] (input in degrees)
-theta = np.radians(0.0)       # True anomaly [rad] (input in degrees)
+zp = 32623.6                    # Periapsis altitude [km]               
+e = 0.075                       # Eccentricity []
+i = np.radians(43.0)            # Inclination [rad] (input in degrees)
+raan = np.radians(195.0)        # Right ascension of ascending node [rad] (input in degrees)
+argp = np.radians(270.0)        # Argument of periapsis [rad] (input in degrees)
+theta = np.radians(305.0)       # True anomaly [rad] (input in degrees)
 
 # Initial epoch (UTC)
-date = np.array([1, 3, 2022])  # Date [mm/dd/yyyy]
-timeUTC = np.array([12, 0, 0])    # Universal Time Coordinated (UTC) [hh:mm:ss]
+date = np.array([12, 26, 2009])  # Date [mm/dd/yyyy]
+timeUTC = np.array([12, 0, 0])  # Universal Time Coordinated (UTC) [hh:mm:ss]
 
 # Earth parameters 
-mu = 398600.435507            # Gravitational parameter [km^3/s^2]
-r_Earth = 6378.1366           # Radius of Earth [km]
+mu = 398600.435507              # Gravitational parameter [km^3/s^2]
+r_Earth = 6378.1366             # Radius of Earth [km]
 
 # Simulation specifications
-stepsPerOrbit = 5000           # Steps per orbit []
-numOrbits = 2               # Number of orbits []
-perturbed = True              # Whether to include perturbation model (True/False)
+stepsPerOrbit = 10000           # Steps per orbit []
+numOrbits = 1.5                 # Number of orbits []
+perturbed = True                # Whether to include perturbation model (True/False)
 
 
 # ---------------------------------- Calculations ---------------------------------
@@ -208,11 +205,18 @@ traj = integrate(r0, v0, dt, n, mu, perturbed)
 J0 = UTCtoJ0(date)
 julian_date = JD(timeUTC, J0)
 theta_G = GST(J0, timeUTC)
+
+# Latitude and longitude (initial and final)
+lat, long = latLongECEF(traj, theta_G)
 startingLatitude = np.degrees(np.arcsin(r0[2]/np.linalg.norm(r0)))
 startingLongitude = np.degrees(np.arctan2(r0[1], r0[0])) - np.rad2deg(theta_G) % 360
-
+finalLatitude = lat[-1]
+finalLongitude = long[-1]
 if startingLongitude < 0: startingLongitude += 360
 elif startingLongitude > 180: startingLongitude -= 360
+else: pass
+if finalLongitude < 0: finalLongitude += 360
+elif finalLongitude > 180: finalLongitude -= 360
 else: pass
 
 # Max errors (energy, angular momentum)
@@ -329,6 +333,7 @@ def plotErrors(traj):
 print(f"Simulation time:                     {runtime:.3f} seconds"), print(f"")
 print(f"Perturbed:                           {perturbed}")
 print(f"Total orbits:                        {numOrbits}")
+print(f"Semi-major axis (a):                 {a:.3f} km")
 print(f"Orbital period (T):                  {T:.3f} seconds")
 print(f"Time step (dt):                      {dt:.3f} seconds")
 
@@ -336,9 +341,12 @@ print(f""), print(f""), print(f"------------------------ Results ---------------
 
 print(f"Initial epoch:                       {date[0]:02d}/{date[1]:02d}/{date[2]:02d} {timeUTC[0]:02d}:{timeUTC[1]:02d}:{timeUTC[2]:02d} UTC")
 print(f"Julian date at epoch:                {julian_date}")
-print(f"Greenwich sidereal time (epoch):     {np.rad2deg(theta_G):.3f} deg")
+print(f"Greenwich sidereal time (epoch):     {np.rad2deg(theta_G):.3f} deg"), print(f"")
+
 print(f"Starting latitude:                   {startingLatitude:.3f} deg")
-print(f"Starting longitude:                  {startingLongitude:.3f} deg"), print(f"")
+print(f"Starting longitude:                  {startingLongitude:.3f} deg")
+print(f"Final latitude:                      {finalLatitude:.3f} deg")
+print(f"Final longitude:                     {finalLongitude:.3f} deg"), print(f"")
 
 print(f"Max |ΔH|:                            {maxDeltaE:.3e} km^2/s^2")
 print(f"Mean |ΔH|:                           {(traj['E'] - traj['E'].iloc[0]).abs().mean():.3e} km^2/s^2")
@@ -347,7 +355,7 @@ print(f"Mean |ΔL|:                           {(traj['L'] - traj['L'].iloc[0]).a
 
 # Plotting
 print(f""), print(f""), print(f"------------------------ See Plots ------------------------"), print(f""), print(f"")
-# orbit3D(traj)
+orbit3D(traj)
 groundTrack(traj, theta_G)
 plotErrors(traj)
 plt.show()
@@ -405,6 +413,7 @@ print(f""), print(f""), print(f"--------------------- Script Concluded ---------
 
 
 # Quasi-Zenith Satellite System [5] (Tundra) -----------
+# https://en.wikipedia.org/wiki/Quasi-Zenith_Satellite_System
 
 # Orbtial elements
 # zp = 32623.6                     # Periapsis altitude [km]               
@@ -415,7 +424,7 @@ print(f""), print(f""), print(f"--------------------- Script Concluded ---------
 # theta = np.radians(305.0)        # True anomaly [rad] (input in degrees)
 
 # Initial epoch (UTC)
-# date = np.array([12, 1, 2022])   # Date [mm/dd/yyyy]
+# date = np.array([12, 26, 2009])  # Date [mm/dd/yyyy]
 # timeUTC = np.array([12, 0, 0])   # Universal Time Coordinated (UTC) [hh:mm:ss]
 
 # Earth parameters 
